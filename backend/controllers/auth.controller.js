@@ -5,17 +5,30 @@ import jwt from "jsonwebtoken";
 import ApiError from "../utils/errorHandler.js";
 
 export const register = asyncHandler(async (req, res, next) => {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-        throw new ApiError(400, "User already exists.");
+    if (!username || !email || !password) {
+        throw new ApiError(400, "Username, email and password are required.");
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashedPassword, role: 'user' });
+    if (password.length < 6) {
+        throw new ApiError(400, "Password must be at least 6 characters long.");
+    }
+
+    const existingUser = await User.findOne({
+        $or: [{ email }, { username }],
+    });
+
+    if (existingUser) {
+        throw new ApiError(400, "User with this email or username already exists.");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, process.env.SALT_ROUNDS || 10);
+
+    const user = new User({ username, email, password: hashedPassword });
+
     await user.save();
+    
     res.status(201).json({
         success: true,
         message: "User registered successfully"
@@ -25,7 +38,7 @@ export const register = asyncHandler(async (req, res, next) => {
 export const login = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
         throw new ApiError(400, "Invalid email.");

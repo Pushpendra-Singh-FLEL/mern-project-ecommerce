@@ -4,7 +4,7 @@ import errorMiddleware from "../middlewares/error.middle.js";
 
 const authRouter = express.Router();
 
-authRouter.post("/register", register, errorMiddleware);
-authRouter.post("/login", login, errorMiddleware);
+authRouter.post("/register", register);
+authRouter.post("/login", login);
 
 export default authRouter;
