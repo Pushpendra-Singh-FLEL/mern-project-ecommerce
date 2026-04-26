@@ -1,5 +1,5 @@
 import asyncHandler from "../utils/asyncHandlers.js";
-import { User } from "../models/user.schema.js";
+import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/errorHandler.js";
@@ -49,7 +49,9 @@ export const login = asyncHandler(async (req, res, next) => {
         throw new ApiError(400, "Email and password are required.");
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const canonicalizedEmail = email.trim().toLowerCase();
+    
+    const user = await User.findOne({ email: canonicalizedEmail }).select("+password");
 
     if (!user) {
         throw new ApiError(401, "Invalid credentials.");
