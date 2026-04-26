@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
             required: [true, "Username is required"],  // Custom error message if username is not provided
             unique: true,  // Ensure usernames are unique
             trim: true, // Remove whitespace from both ends of the string
+            lowercase: true, // Convert username to lowercase before saving
             minlength: [3, "Username must be at least 3 characters long"],
             maxlength: [30, "Username cannot exceed 30 characters"],
             match: [/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"],
