@@ -7,10 +7,10 @@ import ApiError from "../utils/errorHandler.js";
 export const register = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
 
-    const existingUser = await User.findOne({email});
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-        return next(new ApiError(400, "User already exists."));
+        throw new ApiError(400, "User already exists.");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -19,5 +19,25 @@ export const register = asyncHandler(async (req, res, next) => {
     res.status(201).json({
         success: true,
         message: "User registered successfully"
+    });
+});
+
+export const login = asyncHandler(async (req, res, next) => {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        throw new ApiError(400, "Invalid email.");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+        throw new ApiError(400, "Invalid email or password.");
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Login successful"
     });
 });
